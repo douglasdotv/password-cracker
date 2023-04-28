@@ -1,0 +1,28 @@
+# Ignore IDE-specific files
+.idea/
+*.iml
+
+# Ignore Gradle build files
+.gradle/
+build/
+
+# Ignore Gradle wrapper files (optional, some people prefer to include these in the repo)
+# gradle/wrapper/gradle-wrapper.jar
+# gradle/wrapper/gradle-wrapper.properties
+# gradlew
+# gradlew.bat
+
+# Ignore other generated files
+*.class
+*.log
+*.jar
+*.war
+*.ear
+*.zip
+*.tar
+*.gz
+*.rar
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
