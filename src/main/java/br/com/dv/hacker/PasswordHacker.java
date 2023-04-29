@@ -6,30 +6,49 @@ import java.net.Socket;
 
 public class PasswordHacker {
 
-    public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("Invalid number of arguments.");
+    private final PasswordGenerator passwordGenerator = new PasswordGenerator();
+
+    public void run(String[] args) {
+        InputData inputData = validateInputs(args);
+        if (inputData == null) {
             return;
         }
-
-        String ipAddress = args[0];
-        int port;
-        try {
-            port = Integer.parseInt(args[1]);
-            if (port < 0 || port > 65535) {
-                System.out.println("Invalid port number.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid port number.");
-            return;
-        }
-
-        String password = bruteForcePassword(ipAddress, port);
+        String password = bruteForcePassword(inputData.ipAddress(), inputData.port());
         System.out.println(password);
     }
 
-    private static String bruteForcePassword(String ipAddress, int port) {
+    private InputData validateInputs(String[] args) {
+        if (args.length != 2) {
+            System.out.println("Invalid number of arguments. Expected 2, got " + args.length + ".");
+            return null;
+        }
+
+        String ipAddress = args[0];
+        int port = parsePort(args[1]);
+        if (port == -1) {
+            return null;
+        }
+
+        return new InputData(ipAddress, port);
+    }
+
+    private int parsePort(String portString) {
+        int port;
+        try {
+            port = Integer.parseInt(portString);
+            if (port < 0 || port > 65535) {
+                System.out.println("Invalid port number.");
+                return -1;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid port number.");
+            return -1;
+        }
+
+        return port;
+    }
+
+    private String bruteForcePassword(String ipAddress, int port) {
         String currentPassword = "";
         String response = "";
 
@@ -37,7 +56,7 @@ public class PasswordHacker {
              DataInputStream input = new DataInputStream(socket.getInputStream());
              DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
             while (!response.contains("Connection success!")) {
-                currentPassword = generateNextPassword(currentPassword);
+                currentPassword = passwordGenerator.generateNextPassword(currentPassword);
                 output.writeUTF(currentPassword);
                 output.flush();
                 response = input.readUTF();
@@ -50,28 +69,4 @@ public class PasswordHacker {
         return currentPassword;
     }
 
-    private static String generateNextPassword(String currentPassword) {
-        StringBuilder newPassword = new StringBuilder(currentPassword);
-        int index = newPassword.length() - 1;
-
-        while (index >= 0) {
-            char currentChar = newPassword.charAt(index);
-            if (currentChar == 'z') {
-                newPassword.setCharAt(index, '0');
-                break;
-            } else if (currentChar == '9') {
-                newPassword.setCharAt(index, 'a');
-                index--;
-            } else {
-                newPassword.setCharAt(index, (char) (currentChar + 1));
-                break;
-            }
-        }
-
-        if (index < 0) {
-            newPassword.insert(0, 'a');
-        }
-
-        return newPassword.toString();
-    }
 }
