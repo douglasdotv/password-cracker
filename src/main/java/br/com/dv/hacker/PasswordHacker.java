@@ -2,18 +2,24 @@ package br.com.dv.hacker;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PasswordHacker {
 
-    private final PasswordGenerator passwordGenerator = new PasswordGenerator();
+    private final DictionaryReader dictionaryReader = new DictionaryReader();
+    private static final String FILE_PATH = "/passwords.txt";
 
     public void run(String[] args) {
         InputData inputData = validateInputs(args);
         if (inputData == null) {
             return;
         }
-        String password = bruteForcePassword(inputData.ipAddress(), inputData.port());
+
+        List<String> passwords = dictionaryReader.readDictionary(FILE_PATH);
+        String password = bruteForcePassword(inputData.ipAddress(), inputData.port(), passwords);
         System.out.println(password);
     }
 
@@ -48,18 +54,41 @@ public class PasswordHacker {
         return port;
     }
 
-    private String bruteForcePassword(String ipAddress, int port) {
+    private List<String> generateCombinations(String password) {
+        List<String> combinations = new ArrayList<>();
+        int numOfCombinations = 1 << password.length();
+
+        for (int i = 0; i < numOfCombinations; i++) {
+            char[] combination = password.toCharArray();
+            for (int j = 0; j < password.length(); j++) {
+                if (((i >> j) & 1) == 1) {
+                    combination[j] = Character.toUpperCase(combination[j]);
+                }
+            }
+            combinations.add(new String(combination));
+        }
+
+        return combinations;
+    }
+
+    private String bruteForcePassword(String ipAddress, int port, List<String> dictionary) {
         String currentPassword = "";
-        String response = "";
+        String response;
 
         try (Socket socket = new Socket(ipAddress, port);
              DataInputStream input = new DataInputStream(socket.getInputStream());
              DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
-            while (!response.contains("Connection success!")) {
-                currentPassword = passwordGenerator.generateNextPassword(currentPassword);
-                output.writeUTF(currentPassword);
-                output.flush();
-                response = input.readUTF();
+
+            outerLoop:
+            for (String password : dictionary) {
+                List<String> combinations = generateCombinations(password);
+                for (String combination : combinations) {
+                    response = getResponse(input, output, combination);
+                    if (response.contains("Connection success!")) {
+                        currentPassword = combination;
+                        break outerLoop;
+                    }
+                }
             }
         } catch (Exception e) {
             System.out.println("An error occurred while connecting to the server: " + e.getMessage());
@@ -67,6 +96,13 @@ public class PasswordHacker {
         }
 
         return currentPassword;
+    }
+
+    private String getResponse(DataInputStream input, DataOutputStream output, String combination)
+            throws IOException {
+        output.writeUTF(combination);
+        output.flush();
+        return input.readUTF();
     }
 
 }
