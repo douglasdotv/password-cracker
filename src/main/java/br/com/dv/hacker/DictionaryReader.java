@@ -4,29 +4,33 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DictionaryReader {
+public final class DictionaryReader {
 
-    public List<String> readDictionary(String filePath) {
-        List<String> passwords = new ArrayList<>();
+    private DictionaryReader() {
+    }
 
-        try (InputStream is = getClass().getResourceAsStream(filePath)) {
+    public static List<String> readDictionary(String filePath) {
+        List<String> lines = new ArrayList<>();
+
+        try (InputStream is = DictionaryReader.class.getResourceAsStream(filePath)) {
             if (is == null) {
                 System.out.println("File not found: " + filePath);
-                return passwords;
+                return lines;
             }
+
             try (InputStreamReader isr = new InputStreamReader(is);
                  BufferedReader reader = new BufferedReader(isr)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    passwords.add(line);
+                    lines.add(line);
                 }
             }
         } catch (IOException e) {
-            System.out.println("An error occurred while reading dict file: " + e.getMessage());
+            System.out.println("An error occurred while reading file: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return passwords;
+        return lines;
     }
 
 }
