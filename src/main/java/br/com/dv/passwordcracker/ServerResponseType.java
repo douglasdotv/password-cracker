@@ -1,4 +1,4 @@
-package br.com.dv.hacker;
+package br.com.dv.passwordcracker;
 
 public enum ServerResponseType {
     WRONG_LOGIN("Wrong login!"),

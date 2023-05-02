@@ -1,4 +1,4 @@
-package br.com.dv.hacker;
+package br.com.dv.passwordcracker;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

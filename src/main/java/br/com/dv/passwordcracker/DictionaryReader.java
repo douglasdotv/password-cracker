@@ -1,4 +1,4 @@
-package br.com.dv.hacker;
+package br.com.dv.passwordcracker;
 
 import java.io.*;
 import java.util.ArrayList;

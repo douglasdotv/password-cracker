@@ -1,4 +1,4 @@
-package br.com.dv.hacker;
+package br.com.dv.passwordcracker;
 
 import com.google.gson.Gson;
 
@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
-public class PasswordHacker {
+public class PasswordCracker {
 
     private final Gson gson = new Gson();
 
